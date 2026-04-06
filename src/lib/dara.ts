@@ -1,0 +1,477 @@
+import { BattleData } from "./types";
+
+export const daraData: BattleData = {
+  battleMetadata: {
+    name: "Battle of Dara",
+    date: "June 530 CE",
+    location: "Near Dara (Mesopotamian frontier, modern Mardin region)",
+    belligerents: ["Eastern Roman (Byzantine) Empire", "Sasanian Empire"],
+    commanders: [
+      ["Belisarius", "Hermogenes", "Sunicas", "Aigan"],
+      ["Perozes (Sasanian overall commander)", "Baresmanas (Immortals)", "Pityaxes"],
+    ],
+    outcome: "Decisive Byzantine defensive victory",
+    scale: "Approx. 25,000 Byzantines vs 40,000-50,000 Sasanians",
+  },
+
+  context:
+    "In the final years of Emperor Justin I and at the dawn of Justinian's reign, the Roman-Persian frontier erupted again in the Iberian War. The fortified city of Dara, built by the Romans close to the frontier, was both a military bastion and a political provocation to the Sasanians. Persia sought to reassert dominance in upper Mesopotamia and break Roman confidence before Justinian could consolidate power.\\n\\nBelisarius, still early in his career but already known for discipline and tactical creativity, faced a larger Sasanian field army under Perozes. Rather than meeting Persian cavalry in open maneuver, he prepared the ground around Dara with an engineered defense: long trenches with controlled gaps, shaping lanes for attacks and protecting vulnerable flanks. He also integrated diverse troops including Hun cavalry and heavily armed infantry, aiming to absorb shock then counterstrike at decisive points.\\n\\nThe battle became a textbook case of battlefield preparation defeating numerical superiority. Through terrain modification, disciplined reserves, and timed cavalry intervention, the Byzantine army broke repeated assaults, shattered the elite Persian Immortals wing attack, and transformed what should have been a Persian pressure victory into one of Belisarius's most admired early triumphs.",
+
+  terrain: [
+    {
+      type: "plain",
+      label: "Open Battle Plain",
+      points: [
+        { x: 8, y: 18 },
+        { x: 90, y: 18 },
+        { x: 90, y: 86 },
+        { x: 8, y: 86 },
+      ],
+    },
+    {
+      type: "fortification",
+      label: "Dara Outer Defensive Line",
+      points: [
+        { x: 22, y: 63 },
+        { x: 78, y: 63 },
+        { x: 78, y: 66 },
+        { x: 22, y: 66 },
+      ],
+    },
+    {
+      type: "fortification",
+      label: "Left Trench Arc",
+      points: [
+        { x: 18, y: 58 },
+        { x: 30, y: 51 },
+        { x: 34, y: 55 },
+        { x: 22, y: 61 },
+      ],
+    },
+    {
+      type: "fortification",
+      label: "Right Trench Arc",
+      points: [
+        { x: 66, y: 55 },
+        { x: 70, y: 51 },
+        { x: 82, y: 58 },
+        { x: 78, y: 61 },
+      ],
+    },
+    {
+      type: "urban",
+      label: "Dara City (Rear)",
+      points: [
+        { x: 35, y: 86 },
+        { x: 65, y: 86 },
+        { x: 67, y: 96 },
+        { x: 33, y: 96 },
+      ],
+    },
+    {
+      type: "hill",
+      label: "Low Ridges",
+      points: [
+        { x: 10, y: 34 },
+        { x: 20, y: 31 },
+        { x: 24, y: 37 },
+        { x: 14, y: 40 },
+      ],
+    },
+    {
+      type: "hill",
+      label: "Eastern Rise",
+      points: [
+        { x: 74, y: 34 },
+        { x: 84, y: 31 },
+        { x: 88, y: 37 },
+        { x: 78, y: 40 },
+      ],
+    },
+    {
+      type: "road",
+      label: "Nisibis-Dara Approach",
+      points: [
+        { x: 49, y: 0 },
+        { x: 49, y: 18 },
+        { x: 50, y: 35 },
+        { x: 50, y: 52 },
+      ],
+      width: 0.8,
+    },
+  ],
+
+  forces: [
+    {
+      id: "byz-center-infantry",
+      name: "Byzantine Center Infantry",
+      side: 0,
+      type: "infantry",
+      count: 12000,
+      commander: "Belisarius",
+      startPosition: { x: 50, y: 68 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "byz-left-cavalry",
+      name: "Byzantine Left Cavalry",
+      side: 0,
+      type: "cavalry",
+      count: 3500,
+      commander: "Sunicas",
+      startPosition: { x: 30, y: 64 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "byz-right-cavalry",
+      name: "Byzantine Right Cavalry",
+      side: 0,
+      type: "cavalry",
+      count: 3500,
+      commander: "Aigan",
+      startPosition: { x: 70, y: 64 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "byz-hun-reserve",
+      name: "Hun Cavalry Reserve",
+      side: 0,
+      type: "cavalry",
+      count: 1500,
+      commander: "Sunicas",
+      startPosition: { x: 58, y: 74 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "byz-archer-line",
+      name: "Byzantine Archer Line",
+      side: 0,
+      type: "archers",
+      count: 3000,
+      commander: "Hermogenes",
+      startPosition: { x: 50, y: 62 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "byz-pikemen-gaps",
+      name: "Gap Guard Pikemen",
+      side: 0,
+      type: "pikemen",
+      count: 1200,
+      commander: "Frontier Tribunes",
+      startPosition: { x: 50, y: 66 },
+      color: "#8b3a3a",
+    },
+
+    {
+      id: "sas-center-line",
+      name: "Sasanian Center Line",
+      side: 1,
+      type: "infantry",
+      count: 18000,
+      commander: "Perozes",
+      startPosition: { x: 50, y: 28 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "sas-left-cavalry",
+      name: "Sasanian Left Cavalry",
+      side: 1,
+      type: "cavalry",
+      count: 9000,
+      commander: "Pityaxes",
+      startPosition: { x: 28, y: 30 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "sas-right-cavalry",
+      name: "Sasanian Right Cavalry",
+      side: 1,
+      type: "cavalry",
+      count: 9000,
+      commander: "Unnamed Spahbed",
+      startPosition: { x: 72, y: 30 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "sas-immortals",
+      name: "Immortals Strike Wing",
+      side: 1,
+      type: "cavalry",
+      count: 5000,
+      commander: "Baresmanas",
+      startPosition: { x: 80, y: 24 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "sas-archers",
+      name: "Sasanian Archer Screen",
+      side: 1,
+      type: "archers",
+      count: 4000,
+      commander: "Royal Officers",
+      startPosition: { x: 50, y: 35 },
+      color: "#3a5a8b",
+    },
+  ],
+
+  phases: [
+    {
+      title: "Engineered Deployment at Dara",
+      timestamp: "Morning",
+      duration: "~45 minutes",
+      narration:
+        "Belisarius anchors his force behind trenches with deliberate openings, forcing Persian attacks into predictable lanes. The Byzantine line is compact and reserve-driven, while Perozes deploys with wider cavalry wings and confidence in numerical superiority.",
+      movements: [
+        {
+          unitId: "sas-center-line",
+          from: { x: 50, y: 28 },
+          to: { x: 50, y: 34 },
+          action: "advance",
+          significant: true,
+          note: "Persian center advances to probe trench gaps.",
+        },
+        {
+          unitId: "byz-pikemen-gaps",
+          from: { x: 50, y: 66 },
+          to: { x: 50, y: 65 },
+          action: "hold",
+          note: "Gap guards lock into anti-cavalry posture.",
+        },
+      ],
+      casualties: {
+        side0: 300,
+        side1: 300,
+        description: "Light opening contact losses",
+      },
+      tacticalNote: "The trenches are not passive defense; they are maneuver channels designed to structure Persian movement.",
+    },
+    {
+      title: "Arrow Duel and Range Pressure",
+      timestamp: "Late morning",
+      duration: "~40 minutes",
+      narration:
+        "Both sides begin sustained missile exchanges. Persian archers attempt to soften the Byzantine center before cavalry commitment, but Byzantine return fire from protected frontage reduces the advantage of Persian numbers.",
+      movements: [
+        {
+          unitId: "sas-archers",
+          from: { x: 50, y: 35 },
+          to: { x: 50, y: 40 },
+          action: "bombard",
+          significant: true,
+          note: "Sasanian archers open concentrated volleys.",
+        },
+        {
+          unitId: "byz-archer-line",
+          from: { x: 50, y: 62 },
+          to: { x: 50, y: 59 },
+          action: "bombard",
+          note: "Byzantine archers fire from protected trench line.",
+        },
+      ],
+      casualties: {
+        side0: 900,
+        side1: 850,
+        description: "Heavy missile attrition on both centers",
+      },
+      tacticalNote: "Belisarius preserves cohesion by trading arrows from prepared positions rather than exposing cavalry early.",
+    },
+    {
+      title: "Persian Left Tests the Trench Arc",
+      timestamp: "Midday",
+      duration: "~35 minutes",
+      narration:
+        "Pityaxes drives the Persian left against the Byzantine left sector, trying to collapse the curved trench edge. Sunicas counters with disciplined cavalry timing, denying breakthrough and forcing repeated Persian re-formation.",
+      movements: [
+        {
+          unitId: "sas-left-cavalry",
+          from: { x: 28, y: 30 },
+          to: { x: 24, y: 48 },
+          action: "charge",
+          significant: true,
+          note: "Persian left launches first major cavalry shock.",
+        },
+        {
+          unitId: "byz-left-cavalry",
+          from: { x: 30, y: 64 },
+          to: { x: 28, y: 56 },
+          action: "flank",
+          significant: true,
+          note: "Sunicas counter-maneuvers off the trench shoulder.",
+        },
+        {
+          unitId: "sas-left-cavalry",
+          from: { x: 24, y: 48 },
+          to: { x: 22, y: 43 },
+          action: "retreat",
+          damage: "heavy",
+          note: "Assault recoils after failed penetration.",
+        },
+      ],
+      casualties: {
+        side0: 1400,
+        side1: 2600,
+        description: "Persian cavalry suffers elevated losses at trench edge",
+      },
+      tacticalNote: "This phase confirms the trench geometry is working exactly as intended against cavalry mass.",
+    },
+    {
+      title: "Center Binding Action",
+      timestamp: "Early afternoon",
+      duration: "~30 minutes",
+      narration:
+        "Perozes binds the Byzantine center with direct pressure while preparing a decisive right-wing commitment. Belisarius refuses overreaction and keeps his Hun reserve unspent behind the main line.",
+      movements: [
+        {
+          unitId: "sas-center-line",
+          from: { x: 50, y: 34 },
+          to: { x: 50, y: 46 },
+          action: "advance",
+          significant: true,
+          note: "Persian center fixes Byzantine infantry in place.",
+        },
+        {
+          unitId: "byz-center-infantry",
+          from: { x: 50, y: 68 },
+          to: { x: 50, y: 66 },
+          action: "hold",
+          note: "Byzantine center absorbs pressure without breaking formation.",
+        },
+      ],
+      casualties: {
+        side0: 1200,
+        side1: 1400,
+        description: "Close-quarter center fighting, no decisive rupture",
+      },
+      tacticalNote: "Belisarius's restraint keeps his decisive mobile force available for the coming flank crisis.",
+    },
+    {
+      title: "Immortals Commit on the Persian Right",
+      timestamp: "Mid-afternoon",
+      duration: "~40 minutes",
+      narration:
+        "Baresmanas leads the Immortals with the Persian right in a concentrated strike toward the Byzantine right-center seam. This is the intended decisive blow. The Byzantine right bends but does not collapse as Aigan delays the assault long enough for reserve action.",
+      movements: [
+        {
+          unitId: "sas-immortals",
+          from: { x: 80, y: 24 },
+          to: { x: 72, y: 49 },
+          action: "charge",
+          significant: true,
+          note: "Immortals launch elite shock thrust at Byzantine right.",
+        },
+        {
+          unitId: "sas-right-cavalry",
+          from: { x: 72, y: 30 },
+          to: { x: 68, y: 50 },
+          action: "advance",
+          note: "Supporting cavalry deepens pressure on right flank.",
+        },
+        {
+          unitId: "byz-right-cavalry",
+          from: { x: 70, y: 64 },
+          to: { x: 67, y: 58 },
+          action: "hold",
+          significant: true,
+          note: "Aigan's wing stabilizes line under maximum pressure.",
+        },
+      ],
+      casualties: {
+        side0: 2200,
+        side1: 1700,
+        description: "Severe mounted combat on Byzantine right sector",
+      },
+      tacticalNote: "The Persian command commits elite cavalry before fully dislocating Byzantine reserves.",
+    },
+    {
+      title: "Belisarius's Decisive Counterstroke",
+      timestamp: "Late afternoon",
+      duration: "~35 minutes",
+      narration:
+        "At the peak of Immortals momentum, Belisarius commits Hun reserve cavalry into the exposed flank of the Persian strike mass. Sunicas and Aigan synchronize local counter-attacks, turning Persian advance lanes into compression traps.",
+      movements: [
+        {
+          unitId: "byz-hun-reserve",
+          from: { x: 58, y: 74 },
+          to: { x: 64, y: 56 },
+          action: "flank",
+          significant: true,
+          note: "Hun reserve hits Immortals flank at decisive timing.",
+        },
+        {
+          unitId: "byz-right-cavalry",
+          from: { x: 67, y: 58 },
+          to: { x: 70, y: 53 },
+          action: "charge",
+          significant: true,
+          note: "Byzantine right counter-charges into compressed Persian front.",
+        },
+        {
+          unitId: "sas-immortals",
+          from: { x: 72, y: 49 },
+          to: { x: 78, y: 43 },
+          action: "rout",
+          damage: "heavy",
+          significant: true,
+          note: "Immortals lose cohesion under flank and front pressure.",
+        },
+      ],
+      casualties: {
+        side0: 900,
+        side1: 4200,
+        description: "Immortals and supporting right-wing cavalry mauled",
+      },
+      tacticalNote: "Classic reserve timing: Belisarius spends mobility only when Persian elite commitment exposes lateral vulnerability.",
+    },
+    {
+      title: "Persian Withdrawal and Field Control",
+      timestamp: "Evening",
+      duration: "~30 minutes",
+      narration:
+        "With both major wing attacks spent and the Immortals shattered, Persian command orders withdrawal to avoid full collapse. Byzantine cavalry pursuit is controlled and limited; Dara remains secure and Belisarius retains battlefield dominance.",
+      movements: [
+        {
+          unitId: "sas-right-cavalry",
+          from: { x: 68, y: 50 },
+          to: { x: 74, y: 37 },
+          action: "retreat",
+          damage: "heavy",
+          note: "Persian right disengages under pressure.",
+        },
+        {
+          unitId: "sas-center-line",
+          from: { x: 50, y: 46 },
+          to: { x: 50, y: 34 },
+          action: "retreat",
+          significant: true,
+          note: "Center withdraws to re-form and cover general retreat.",
+        },
+      ],
+      casualties: {
+        side0: 600,
+        side1: 2200,
+        description: "Retreat losses and pursuit skirmishes",
+      },
+      tacticalNote: "Byzantine discipline in victory prevents overextension and preserves strategic gains.",
+    },
+  ],
+
+  aftermath: {
+    outcome:
+      "Byzantine victory at Dara. Persian offensive momentum on this sector was checked and Belisarius emerged as a commander of major frontier significance.",
+    casualties: {
+      side0: {
+        dead: 4500,
+        wounded: 3500,
+        captured: 400,
+      },
+      side1: {
+        dead: 10000,
+        wounded: 6500,
+        captured: 1200,
+      },
+    },
+    significance:
+      "Dara demonstrated that disciplined field engineering, reserve control, and integrated cavalry timing could defeat a larger Sasanian force. It was one of Belisarius's defining early victories and elevated Byzantine confidence ahead of Justinian's wider military ambitions. While the Roman-Persian war continued, Dara became a studied example of tactical preparation converting strategic defensive pressure into operational success.",
+  },
+};
