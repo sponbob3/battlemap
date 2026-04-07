@@ -1,10 +1,73 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import { TerrainFeature, Position } from "@/lib/types";
+
+interface HoveredTerrainLabel {
+  x: number;
+  y: number;
+  text: string;
+  fill: string;
+  fontSize: number;
+  opacity: number;
+  letterSpacing?: number;
+}
 
 interface TerrainProps {
   features: TerrainFeature[];
+  onLabelHover?: (label: HoveredTerrainLabel | null) => void;
+}
+
+interface TerrainLabelProps {
+  x: number;
+  y: number;
+  text: string;
+  fill: string;
+  fontSize: number;
+  opacity?: number;
+  letterSpacing?: number;
+  onLabelHover?: (label: HoveredTerrainLabel | null) => void;
+}
+
+function TerrainLabel({
+  x,
+  y,
+  text,
+  fill,
+  fontSize,
+  opacity = 0.75,
+  letterSpacing,
+  onLabelHover,
+}: TerrainLabelProps) {
+  return (
+    <motion.text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      fill={fill}
+      fontSize={fontSize}
+      opacity={opacity}
+      style={{ cursor: "default", pointerEvents: "auto" }}
+      letterSpacing={letterSpacing}
+      whileHover={{ fontSize: fontSize * 1.14, opacity: Math.min(1, opacity + 0.2) }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
+      onMouseEnter={() =>
+        onLabelHover?.({
+          x,
+          y,
+          text,
+          fill,
+          fontSize,
+          opacity,
+          letterSpacing,
+        })
+      }
+      onMouseLeave={() => onLabelHover?.(null)}
+    >
+      {text}
+    </motion.text>
+  );
 }
 
 function pointsToPath(points: Position[]): string {
@@ -44,7 +107,7 @@ function scalePolygon(points: Position[], center: Position, factor: number): Pos
   }));
 }
 
-function RiverFeature({ feature }: { feature: TerrainFeature }) {
+function RiverFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const mid = feature.points[Math.floor(feature.points.length / 2)] || { x: 0, y: 0 };
   const width = feature.width || 1.4;
   return (
@@ -53,15 +116,13 @@ function RiverFeature({ feature }: { feature: TerrainFeature }) {
       <path d={pointsToSmoothPath(feature.points)} stroke="#6ea6d8" strokeWidth={width} fill="none" opacity={0.7} strokeLinecap="round" />
       <path d={pointsToSmoothPath(feature.points)} stroke="#9fd0f5" strokeWidth={Math.max(0.18, width * 0.14)} fill="none" opacity={0.85} strokeDasharray="0.9 0.6" />
       {feature.label && (
-        <text x={mid.x} y={mid.y - 1.1} fontSize="1.6" fill="#9bc6eb" opacity={0.8} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={mid.x} y={mid.y - 1.1} text={feature.label} fill="#9bc6eb" fontSize={1.6} opacity={0.8} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function HillFeature({ feature }: { feature: TerrainFeature }) {
+function HillFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const center = centerOf(feature.points);
   const contour1 = scalePolygon(feature.points, center, 0.84);
   const contour2 = scalePolygon(feature.points, center, 0.68);
@@ -74,59 +135,51 @@ function HillFeature({ feature }: { feature: TerrainFeature }) {
       <path d={pointsToClosedPath(contour2)} fill="none" stroke="#b39574" strokeWidth={0.18} opacity={0.55} />
       <path d={pointsToClosedPath(contour3)} fill="none" stroke="#c1a17d" strokeWidth={0.16} opacity={0.48} />
       {feature.label && (
-        <text x={center.x} y={center.y + 0.4} fontSize="1.6" fill="#d3b596" opacity={0.78} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={center.x} y={center.y + 0.4} text={feature.label} fill="#d3b596" fontSize={1.6} opacity={0.78} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function ForestFeature({ feature }: { feature: TerrainFeature }) {
+function ForestFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const center = centerOf(feature.points);
   return (
     <g>
       <path d={pointsToClosedPath(feature.points)} fill="url(#forestTexture)" stroke="#4f6d46" strokeWidth={0.24} opacity={0.58} />
       <ellipse cx={center.x} cy={center.y} rx={4.2} ry={2.8} fill="#1b2f1a" opacity={0.2} />
       {feature.label && (
-        <text x={center.x} y={center.y + 0.3} fontSize="1.6" fill="#9fc494" opacity={0.78} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={center.x} y={center.y + 0.3} text={feature.label} fill="#9fc494" fontSize={1.6} opacity={0.78} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function UrbanFeature({ feature }: { feature: TerrainFeature }) {
+function UrbanFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const center = centerOf(feature.points);
   return (
     <g>
       <path d={pointsToClosedPath(feature.points)} fill="url(#urbanTexture)" stroke="#7f868b" strokeWidth={0.24} opacity={0.6} />
       {feature.label && (
-        <text x={center.x} y={center.y + 0.2} fontSize="1.5" fill="#c4c8cb" opacity={0.72} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={center.x} y={center.y + 0.2} text={feature.label} fill="#c4c8cb" fontSize={1.5} opacity={0.72} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function FortificationFeature({ feature }: { feature: TerrainFeature }) {
+function FortificationFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const center = centerOf(feature.points);
   return (
     <g>
       <path d={pointsToClosedPath(feature.points)} fill="none" stroke="#9aa0a5" strokeWidth={0.36} strokeDasharray="1 0.6" opacity={0.72} />
       <path d={pointsToClosedPath(scalePolygon(feature.points, center, 0.9))} fill="none" stroke="#676d73" strokeWidth={0.18} opacity={0.5} />
       {feature.label && (
-        <text x={center.x} y={center.y + 0.2} fontSize="1.5" fill="#c8ced5" opacity={0.72} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={center.x} y={center.y + 0.2} text={feature.label} fill="#c8ced5" fontSize={1.5} opacity={0.72} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function RoadFeature({ feature }: { feature: TerrainFeature }) {
+function RoadFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const mid = feature.points[Math.floor(feature.points.length / 2)] || { x: 0, y: 0 };
   const width = feature.width || 0.8;
   return (
@@ -134,28 +187,33 @@ function RoadFeature({ feature }: { feature: TerrainFeature }) {
       <path d={pointsToSmoothPath(feature.points)} stroke="#675847" strokeWidth={width + 0.4} fill="none" opacity={0.65} strokeLinecap="round" />
       <path d={pointsToSmoothPath(feature.points)} stroke="#9a866f" strokeWidth={Math.max(0.2, width * 0.26)} fill="none" opacity={0.75} strokeDasharray="0.5 0.5" />
       {feature.label && (
-        <text x={mid.x} y={mid.y - 0.8} fontSize="1.4" fill="#b8a28a" opacity={0.7} textAnchor="middle">
-          {feature.label}
-        </text>
+        <TerrainLabel x={mid.x} y={mid.y - 0.8} text={feature.label} fill="#b8a28a" fontSize={1.4} opacity={0.7} onLabelHover={onLabelHover} />
       )}
     </g>
   );
 }
 
-function PlainFeature({ feature }: { feature: TerrainFeature }) {
+function PlainFeature({ feature, onLabelHover }: { feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }) {
   const center = centerOf(feature.points);
   return (
     <g>
       {feature.label && (
-        <text x={center.x} y={center.y} fontSize="1.9" fill="#80907a" opacity={0.45} textAnchor="middle" letterSpacing="0.4">
-          {feature.label}
-        </text>
+        <TerrainLabel
+          x={center.x}
+          y={center.y}
+          text={feature.label}
+          fill="#80907a"
+          fontSize={1.9}
+          opacity={0.45}
+          letterSpacing={0.4}
+          onLabelHover={onLabelHover}
+        />
       )}
     </g>
   );
 }
 
-const FEATURE_RENDERERS: Record<string, React.FC<{ feature: TerrainFeature }>> = {
+const FEATURE_RENDERERS: Record<string, React.FC<{ feature: TerrainFeature; onLabelHover?: TerrainProps["onLabelHover"] }>> = {
   river: RiverFeature,
   forest: ForestFeature,
   hill: HillFeature,
@@ -166,7 +224,7 @@ const FEATURE_RENDERERS: Record<string, React.FC<{ feature: TerrainFeature }>> =
   road: RoadFeature,
 };
 
-export default function Terrain({ features }: TerrainProps) {
+export default function Terrain({ features, onLabelHover }: TerrainProps) {
   return (
     <g className="terrain-layer">
       <defs>
@@ -207,7 +265,7 @@ export default function Terrain({ features }: TerrainProps) {
 
       {features.map((feature, i) => {
         const Renderer = FEATURE_RENDERERS[feature.type] || PlainFeature;
-        return <Renderer key={`terrain-${i}`} feature={feature} />;
+        return <Renderer key={`terrain-${i}`} feature={feature} onLabelHover={onLabelHover} />;
       })}
     </g>
   );

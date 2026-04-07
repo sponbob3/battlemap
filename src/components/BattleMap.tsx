@@ -36,6 +36,16 @@ interface ActionAnnotation {
   detail: string;
 }
 
+interface HoveredTerrainLabel {
+  x: number;
+  y: number;
+  text: string;
+  fill: string;
+  fontSize: number;
+  opacity: number;
+  letterSpacing?: number;
+}
+
 function getEngagementKind(unitType: UnitType, action: string): "melee" | "missile" | "armor" {
   if (action === "bombard" || unitType === "archers" || unitType === "artillery") return "missile";
   if (unitType === "tanks") return "armor";
@@ -134,8 +144,10 @@ function UnitTooltip({ unit, position }: { unit: UnitGroup; position: Position }
 
 export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleMapProps) {
   const animDuration = getPhaseAnimationDuration(playbackSpeed);
-  const [hoveredUnit, setHoveredUnit] = useState<UnitGroup | null>(null);
+  const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null);
+  const [focusedUnitId, setFocusedUnitId] = useState<string | null>(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
+  const [hoveredTerrainLabel, setHoveredTerrainLabel] = useState<HoveredTerrainLabel | null>(null);
   const [viewportAspect, setViewportAspect] = useState(16 / 9);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -191,9 +203,28 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
     [actionAnnotations, hoveredMarkerId]
   );
 
-  const handleUnitHover = useCallback((unit: UnitGroup | null) => {
-    setHoveredUnit(unit);
+  const handleUnitHoverStart = useCallback((unit: UnitGroup) => {
+    setHoveredUnitId(unit.id);
+    setFocusedUnitId(unit.id);
   }, []);
+
+  const handleUnitHoverEnd = useCallback(() => {
+    setHoveredUnitId(null);
+  }, []);
+
+  const hoveredUnit = useMemo(
+    () => (hoveredUnitId ? data.forces.find((u) => u.id === hoveredUnitId) || null : null),
+    [hoveredUnitId, data.forces]
+  );
+
+  const orderedUnits = useMemo(() => {
+    if (!focusedUnitId) return data.forces;
+    const focusedIndex = data.forces.findIndex((u) => u.id === focusedUnitId);
+    if (focusedIndex < 0) return data.forces;
+    const focused = data.forces[focusedIndex];
+    const others = data.forces.filter((u) => u.id !== focusedUnitId);
+    return [...others, focused];
+  }, [data.forces, focusedUnitId]);
 
   const hoveredPosition = hoveredUnit ? currentPositions.get(hoveredUnit.id) || hoveredUnit.startPosition : null;
 
@@ -202,7 +233,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
       <svg viewBox={`0 0 ${viewBoxWidth} 100`} className="w-full h-full" preserveAspectRatio="none">
         <BurstGradientDef />
 
-        <Terrain features={projectedTerrain} />
+        <Terrain features={projectedTerrain} onLabelHover={setHoveredTerrainLabel} />
 
         {phase &&
           phase.movements.map((movement, i) => (
@@ -218,7 +249,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
             />
           ))}
 
-        {data.forces.map((unit) => {
+        {orderedUnits.map((unit) => {
           const pos = currentPositions.get(unit.id) || unit.startPosition;
           const prevPos = previousPositions.get(unit.id) || unit.startPosition;
           const state = visualStates.get(unit.id);
@@ -236,7 +267,9 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
               status={state?.status ?? "active"}
               colorOverride={dynamicColor}
               engaged={engaged}
-              onHover={handleUnitHover}
+              isFocused={unit.id === focusedUnitId}
+              onHoverStart={handleUnitHoverStart}
+              onHoverEnd={handleUnitHoverEnd}
             />
           );
         })}
@@ -277,6 +310,29 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
         {hoveredUnit && hoveredPosition && <UnitTooltip unit={hoveredUnit} position={projectPosition(hoveredPosition, xScale)} />}
 
         <AnimatePresence>
+          {hoveredTerrainLabel && (
+            <motion.text
+              key={`${hoveredTerrainLabel.text}-${hoveredTerrainLabel.x}-${hoveredTerrainLabel.y}`}
+              x={hoveredTerrainLabel.x}
+              y={hoveredTerrainLabel.y}
+              textAnchor="middle"
+              fill={hoveredTerrainLabel.fill}
+              letterSpacing={hoveredTerrainLabel.letterSpacing}
+              initial={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize }}
+              animate={{
+                opacity: Math.min(1, hoveredTerrainLabel.opacity + 0.25),
+                fontSize: hoveredTerrainLabel.fontSize * 1.2,
+              }}
+              exit={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize }}
+              transition={{ duration: 0.14, ease: "easeOut" }}
+              style={{ pointerEvents: "none" }}
+            >
+              {hoveredTerrainLabel.text}
+            </motion.text>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
           {hoveredAction && (
             <motion.g
               key={hoveredAction.id}
@@ -294,7 +350,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
           )}
         </AnimatePresence>
       </svg>
-      <MapLegend />
+      <MapLegend data={data} />
     </div>
   );
 }

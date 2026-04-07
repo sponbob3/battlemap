@@ -23,7 +23,7 @@ function BattleViewerInner() {
 
   const [currentPhase, setCurrentPhase] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(2);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);

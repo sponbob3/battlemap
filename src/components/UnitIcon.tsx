@@ -16,7 +16,9 @@ interface UnitIconProps {
   status?: UnitStatus;
   colorOverride?: string;
   engaged?: boolean;
-  onHover?: (unit: UnitGroup | null) => void;
+  isFocused?: boolean;
+  onHoverStart?: (unit: UnitGroup) => void;
+  onHoverEnd?: () => void;
 }
 
 export default function UnitIcon({
@@ -29,7 +31,9 @@ export default function UnitIcon({
   status = "active",
   colorOverride,
   engaged = false,
-  onHover,
+  isFocused = false,
+  onHoverStart,
+  onHoverEnd,
 }: UnitIconProps) {
   const scale = getUnitScale(unit.count);
   const halfW = scale / 2;
@@ -49,14 +53,17 @@ export default function UnitIcon({
         x: position.x,
         y: position.y,
         opacity: isDestroyed || isEliminated ? 0.32 : 1,
-        scale: engaged ? [1, 1.06, 1] : 1,
+        scale: engaged ? (isFocused ? [1.12, 1.16, 1.12] : [1, 1.06, 1]) : isFocused ? 1.12 : 1,
       }}
       transition={{
-        duration: animationDuration / 1000,
-        ease: "easeInOut",
+        x: { duration: animationDuration / 1000, ease: "easeInOut" },
+        y: { duration: animationDuration / 1000, ease: "easeInOut" },
+        opacity: { duration: Math.max(0.14, animationDuration / 1300), ease: "easeInOut" },
+        // Keep hover/focus interaction snappy and independent of playback speed.
+        scale: { duration: 0.1, ease: "easeOut" },
       }}
-      onMouseEnter={() => onHover?.(unit)}
-      onMouseLeave={() => onHover?.(null)}
+      onMouseEnter={() => onHoverStart?.(unit)}
+      onMouseLeave={() => onHoverEnd?.()}
       style={{ cursor: "pointer" }}
     >
       <rect
@@ -68,7 +75,7 @@ export default function UnitIcon({
         ry={0.8}
         fill={isEliminated ? "#2a2a2a" : baseFill}
         stroke={isEliminated ? "#666666" : strokeColor}
-        strokeWidth={0.4}
+        strokeWidth={isFocused ? 0.55 : 0.4}
         opacity={isDamaged ? 0.65 : 0.9}
       />
 

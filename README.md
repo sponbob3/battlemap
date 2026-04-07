@@ -18,6 +18,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+If the Next.js dev server ever shows stale chunk/module 404 errors after rapid changes, restart with:
+
+```bash
+npm run dev:reset
+```
+
 ## Claude API (Optional)
 
 To enable live battle research for any conflict, add your Anthropic API key:
