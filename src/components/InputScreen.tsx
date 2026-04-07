@@ -55,7 +55,7 @@ export default function InputScreen() {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-sm text-[#5a6a7a] tracking-wide"
           >
-            Interactive animated battle explanations powered by AI research
+            Interactive animated battle explanations
           </motion.p>
         </div>
 
