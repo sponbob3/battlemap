@@ -58,6 +58,9 @@ export interface Movement {
   unitId: string;
   from: Position;
   to: Position;
+  curve?: {
+    control: Position;
+  };
   action: MovementAction;
   note?: string;
   significant?: boolean;

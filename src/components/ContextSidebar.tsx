@@ -16,9 +16,61 @@ export default function ContextSidebar({
   onToggle,
 }: ContextSidebarProps) {
   const { battleMetadata: meta, context, forces, aftermath } = data;
+  const [showDetailedContext, setShowDetailedContext] = React.useState(false);
 
   const side0Forces = forces.filter((f) => f.side === 0);
   const side1Forces = forces.filter((f) => f.side === 1);
+  const normalizedContext = React.useMemo(
+    () => context.replace(/\\n/g, "\n").replace(/\r\n?/g, "\n").trim(),
+    [context]
+  );
+  const contextParagraphs = React.useMemo(
+    () => normalizedContext.split(/\n\s*\n/).filter((p) => p.trim().length > 0),
+    [normalizedContext]
+  );
+  const conciseContext = React.useMemo(() => {
+    const normalized = normalizedContext.replace(/\s+/g, " ").trim();
+    const sentences = normalized.split(/(?<=[.!?])\s+/).filter(Boolean);
+    return sentences.slice(0, 2).join(" ");
+  }, [normalizedContext]);
+  const contextTerms = React.useMemo(() => {
+    const placeParts = meta.location
+      .split(/[(),]/)
+      .map((part) => part.trim())
+      .filter((part) => part.length > 2);
+    const names = [...meta.commanders[0], ...meta.commanders[1], ...meta.belligerents];
+    return Array.from(new Set([...names, meta.name, ...placeParts])).filter((term) => term.length > 2);
+  }, [meta]);
+  const contextTermsRegex = React.useMemo(() => {
+    const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const terms = contextTerms.map(escapeRegex);
+
+    if (terms.length === 0) {
+      return /(\b\d{3,4}\b|\b\d[\d,]*(?:-\d[\d,]*)?\b)/g;
+    }
+    return new RegExp(`(${terms.join("|")}|\\b\\d{3,4}\\b|\\b\\d[\\d,]*(?:-\\d[\\d,]*)?\\b)`, "gi");
+  }, [contextTerms]);
+  const contextTermsSet = React.useMemo(
+    () => new Set(contextTerms.map((term) => term.toLowerCase())),
+    [contextTerms]
+  );
+  const shouldHighlightContextPart = React.useCallback((part: string) => {
+    if (!part) return false;
+    return /\b\d{3,4}\b|\b\d[\d,]*(?:-\d[\d,]*)?\b/.test(part) || contextTermsSet.has(part.toLowerCase());
+  }, [contextTermsSet]);
+  const emphasizeContext = React.useCallback(
+    (text: string) =>
+      text.split(contextTermsRegex).map((part, idx) =>
+        shouldHighlightContextPart(part) ? (
+          <strong key={`${part}-${idx}`} className="text-[#e7d8b4] font-semibold">
+            {part}
+          </strong>
+        ) : (
+          <React.Fragment key={`${part}-${idx}`}>{part}</React.Fragment>
+        )
+      ),
+    [contextTermsRegex, shouldHighlightContextPart]
+  );
 
   return (
     <>
@@ -89,11 +141,36 @@ export default function ContextSidebar({
                 <h3 className="text-[10px] font-mono text-[#5a6a7a] uppercase tracking-widest mb-2">
                   Strategic Context
                 </h3>
-                {context.split("\n\n").map((para, i) => (
-                  <p key={i} className="text-xs text-[#8a8a7a] leading-relaxed mb-2">
-                    {para}
-                  </p>
-                ))}
+                <p className="text-xs text-[#8a8a7a] leading-relaxed mb-2">
+                  {emphasizeContext(conciseContext)}
+                </p>
+                <div className="bg-[#101721] border border-[#1e2a3a] rounded p-2.5">
+                  <button
+                    onClick={() => setShowDetailedContext((prev) => !prev)}
+                    className="w-full flex items-center justify-between text-left"
+                  >
+                    <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-[#88a0ba]">
+                      Detailed Context
+                    </span>
+                    <span className="text-xs text-[#c4a86b]">{showDetailedContext ? "Hide" : "Show"}</span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {showDetailedContext && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginTop: 8 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        className="overflow-hidden"
+                      >
+                        {contextParagraphs.map((para, i) => (
+                          <p key={i} className="text-xs text-[#97a4b2] leading-relaxed mb-2 last:mb-0">
+                            {emphasizeContext(para)}
+                          </p>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               <div>

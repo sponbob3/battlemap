@@ -64,6 +64,17 @@ export default function MapLegend({ data }: MapLegendProps) {
     return present.sort((a, b) => TERRAIN_LABELS[a].localeCompare(TERRAIN_LABELS[b]));
   }, [data.terrain]);
 
+  const hasVolleyStreaks = useMemo(() => {
+    const rangedTypes = new Set<UnitType>(["archers", "artillery", "tanks", "aircraft"]);
+    return data.phases.some((phase) =>
+      phase.movements.some((movement) => {
+        const unit = data.forces.find((f) => f.id === movement.unitId);
+        if (!unit) return false;
+        return movement.action === "bombard" || (rangedTypes.has(unit.type) && Boolean(movement.significant));
+      })
+    );
+  }, [data.phases, data.forces]);
+
   return (
     <div className="absolute bottom-3 right-3 z-20">
       <button
@@ -110,6 +121,12 @@ export default function MapLegend({ data }: MapLegendProps) {
                   <span className="inline-flex h-1.5 w-1.5 rounded-full bg-[#6a2328]" />
                   <span>Hover marker for action detail</span>
                 </div>
+                {hasVolleyStreaks && (
+                  <div className="flex items-center gap-2 text-[11px] text-[#bcc7d4]">
+                    <span className="inline-block h-[1px] w-5 bg-[#e3bc74]" />
+                    <span>Thin streaks = volleys / projectile fire</span>
+                  </div>
+                )}
               </div>
             </div>
 

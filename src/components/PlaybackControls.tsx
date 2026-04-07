@@ -7,6 +7,7 @@ interface PlaybackControlsProps {
   playbackSpeed: number;
   currentPhase: number;
   totalPhases: number;
+  highlightNext?: boolean;
   onPlayPause: () => void;
   onStepForward: () => void;
   onStepBack: () => void;
@@ -20,6 +21,7 @@ export default function PlaybackControls({
   playbackSpeed,
   currentPhase,
   totalPhases,
+  highlightNext = false,
   onPlayPause,
   onStepForward,
   onStepBack,
@@ -33,7 +35,7 @@ export default function PlaybackControls({
     <div className="flex items-center justify-center gap-3 px-4 py-2">
       <button
         onClick={onJumpToStart}
-        disabled={currentPhase === 0}
+        disabled={currentPhase <= -1}
         className="p-1.5 rounded text-[#8a9ab0] hover:text-[#c4a86b] disabled:opacity-30 transition-colors"
         title="Jump to start"
       >
@@ -44,7 +46,7 @@ export default function PlaybackControls({
 
       <button
         onClick={onStepBack}
-        disabled={currentPhase === 0}
+        disabled={currentPhase <= -1}
         className="p-1.5 rounded text-[#8a9ab0] hover:text-[#c4a86b] disabled:opacity-30 transition-colors"
         title="Previous phase"
       >
@@ -70,9 +72,14 @@ export default function PlaybackControls({
       </button>
 
       <button
+        key={highlightNext ? "next-highlighted" : "next-normal"}
         onClick={onStepForward}
         disabled={currentPhase >= totalPhases - 1}
-        className="p-1.5 rounded text-[#8a9ab0] hover:text-[#c4a86b] disabled:opacity-30 transition-colors"
+        className={`p-1.5 rounded disabled:opacity-30 transition-colors ${
+          highlightNext
+            ? "text-[#d8b66e] border border-[#7a6130] bg-[#2a2315]/55 animate-pulse hover:text-[#efd28f]"
+            : "text-[#8a9ab0] hover:text-[#c4a86b]"
+        }`}
         title="Next phase"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

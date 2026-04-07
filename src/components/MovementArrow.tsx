@@ -9,22 +9,28 @@ interface MovementArrowProps {
   movement: Movement;
   animationDuration: number;
   index: number;
+  colorOverride?: string;
 }
 
 export default function MovementArrow({
   movement,
   animationDuration,
   index,
+  colorOverride,
 }: MovementArrowProps) {
   const { from, to, action } = movement;
-  const color = ACTION_COLORS[action] || "#888888";
+  const color = colorOverride || ACTION_COLORS[action] || "#888888";
 
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.sqrt(dx * dx + dy * dy);
   const arrowHeadSize = Math.min(1.5, length * 0.15);
 
-  const angle = Math.atan2(dy, dx);
+  const hasCurve = Boolean(movement.curve);
+  const endAngle = hasCurve
+    ? Math.atan2(to.y - movement.curve!.control.y, to.x - movement.curve!.control.x)
+    : Math.atan2(dy, dx);
+  const angle = endAngle;
   const tipX = to.x - Math.cos(angle) * 0.5;
   const tipY = to.y - Math.sin(angle) * 0.5;
 
@@ -37,7 +43,9 @@ export default function MovementArrow({
     y: tipY - Math.sin(angle + 0.5) * arrowHeadSize,
   };
 
-  const linePath = `M ${from.x} ${from.y} L ${tipX} ${tipY}`;
+  const linePath = hasCurve
+    ? `M ${from.x} ${from.y} Q ${movement.curve!.control.x} ${movement.curve!.control.y} ${tipX} ${tipY}`
+    : `M ${from.x} ${from.y} L ${tipX} ${tipY}`;
   const arrowPath = `M ${arrowLeft.x} ${arrowLeft.y} L ${tipX} ${tipY} L ${arrowRight.x} ${arrowRight.y}`;
 
   return (
