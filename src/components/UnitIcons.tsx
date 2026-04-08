@@ -5,26 +5,51 @@ interface UnitIconSVGProps {
   type: UnitType;
   size?: number;
   color?: string;
+  modernEra?: boolean;
 }
 
-function InfantryIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
+function SwordIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <line x1="12" y1="3" x2="12" y2="19" />
-      <line x1="8" y1="7" x2="16" y2="7" />
-      <line x1="8" y1="19" x2="16" y2="19" />
+      <line x1="12" y1="3" x2="12" y2="16" />
+      <polyline points="10.7,4.2 12,2.2 13.3,4.2" />
+      <line x1="8" y1="16" x2="16" y2="16" />
+      <line x1="10.2" y1="16" x2="10.2" y2="20.3" />
+      <line x1="13.8" y1="16" x2="13.8" y2="20.3" />
+      <line x1="10.2" y1="20.3" x2="13.8" y2="20.3" />
     </svg>
   );
 }
 
-function CavalryIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
+function RifleIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.9 19.1 L4.9 11.6 Q6 9.3 7.1 11.6 L7.1 19.1 Z" />
+      <path d="M9.9 19.1 L9.9 10.8 Q11 8.3 12.1 10.8 L12.1 19.1 Z" />
+      <path d="M14.9 19.1 L14.9 11.2 Q16 9 17.1 11.2 L17.1 19.1 Z" />
+      <line x1="4.9" y1="19.1" x2="7.1" y2="19.1" />
+      <line x1="9.9" y1="19.1" x2="12.1" y2="19.1" />
+      <line x1="14.9" y1="19.1" x2="17.1" y2="19.1" />
+    </svg>
+  );
+}
+
+function HorseIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="13,2.5 6.8,12 11.5,12 9.8,21.5 17.2,10.8 12.6,10.8 13,2.5" />
+    </svg>
+  );
+}
+
+function ArmoredVehicleIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <path d="M4 15 L9 10 L14 10 L20 6" />
-      <path d="M9 10 L7 18" />
-      <path d="M14 10 L16 18" />
-      <circle cx="7" cy="19" r="1.2" fill={color} />
-      <circle cx="16" cy="19" r="1.2" fill={color} />
+      <rect x="3" y="13" width="18" height="5" rx="1.8" />
+      <rect x="8" y="10" width="8" height="3" rx="0.8" />
+      <line x1="15.8" y1="11.5" x2="22" y2="9.8" />
+      <circle cx="7.2" cy="18.2" r="0.7" fill={color} stroke="none" />
+      <circle cx="16.8" cy="18.2" r="0.7" fill={color} stroke="none" />
     </svg>
   );
 }
@@ -32,9 +57,9 @@ function CavalryIcon({ size = 16, color = "currentColor" }: { size?: number; col
 function ArchersIcon({ size = 16, color = "currentColor" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-      <line x1="4" y1="12" x2="19" y2="12" />
-      <polyline points="15,8 20,12 15,16" />
-      <line x1="6" y1="9" x2="6" y2="15" />
+      <path d="M7 4 Q13 12 7 20" />
+      <line x1="7" y1="12" x2="19" y2="12" />
+      <polyline points="15,9.5 19,12 15,14.5" />
     </svg>
   );
 }
@@ -112,8 +137,8 @@ function PikemenIcon({ size = 16, color = "currentColor" }: { size?: number; col
 }
 
 const ICON_MAP: Record<UnitType, React.FC<{ size?: number; color?: string }>> = {
-  infantry: InfantryIcon,
-  cavalry: CavalryIcon,
+  infantry: SwordIcon,
+  cavalry: HorseIcon,
   archers: ArchersIcon,
   artillery: ArtilleryIcon,
   tanks: TanksIcon,
@@ -124,7 +149,12 @@ const ICON_MAP: Record<UnitType, React.FC<{ size?: number; color?: string }>> = 
   pikemen: PikemenIcon,
 };
 
-export default function UnitIconSVG({ type, size = 16, color = "currentColor" }: UnitIconSVGProps) {
-  const IconComponent = ICON_MAP[type] || InfantryIcon;
+export default function UnitIconSVG({ type, size = 16, color = "currentColor", modernEra = false }: UnitIconSVGProps) {
+  let IconComponent = ICON_MAP[type] || SwordIcon;
+  if (type === "infantry") {
+    IconComponent = modernEra ? RifleIcon : SwordIcon;
+  } else if (type === "cavalry") {
+    IconComponent = modernEra ? ArmoredVehicleIcon : HorseIcon;
+  }
   return <IconComponent size={size} color={color} />;
 }

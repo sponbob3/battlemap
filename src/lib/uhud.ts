@@ -1,0 +1,407 @@
+import { BattleData } from "./types";
+
+export const uhudData: BattleData = {
+  battleMetadata: {
+    name: "Battle of Uhud",
+    date: "23 March 625 CE (3 AH)",
+    location: "North of Medina, at Mount Uhud",
+    belligerents: ["Early Muslim community of Medina", "Quraysh of Mecca"],
+    commanders: [
+      ["Prophet Muhammad", "Ali ibn Abi Talib", "Hamza ibn Abd al-Muttalib", "Abdullah ibn Jubayr"],
+      ["Abu Sufyan ibn Harb", "Khalid ibn al-Walid", "Ikrimah ibn Abi Jahl"],
+    ],
+    outcome: "Quraysh tactical success after reversal; Muslims withdraw in order toward Uhud slopes",
+    scale: "Approx. 700 Muslims vs around 3,000 Quraysh (including cavalry wings)",
+    environment: "desert",
+  },
+
+  context:
+    "After the Quraysh defeat at Badr, Meccan leadership organized a major retaliatory expedition to restore prestige, protect trade credibility, and pressure Medina. The Muslim force, smaller and with limited cavalry, moved north from Medina and positioned with Mount Uhud guarding their rear, reducing encirclement options and forcing a narrower engagement front.\\n\\nA key tactical point was a small elevation controlling the open flank approach near a pass between broken ground and the main field. Archers were placed there under strict instruction not to abandon position, because it screened the army from mounted rear attack.\\n\\nThe battle opened with Muslim momentum and Quraysh front-line disorder. But once many archers left their post during pursuit and collection of spoils, the exposed flank corridor was exploited by Khalid ibn al-Walid's cavalry. The battlefield situation reversed quickly into a severe close-quarters crisis before the Muslim force stabilized on higher ground near Uhud.",
+
+  terrain: [
+    {
+      type: "ridge",
+      label: "Mount Uhud Massif",
+      points: [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+        { x: 100, y: 24 },
+        { x: 83, y: 28 },
+        { x: 66, y: 25 },
+        { x: 49, y: 29 },
+        { x: 32, y: 24 },
+        { x: 16, y: 28 },
+        { x: 0, y: 24 },
+      ],
+    },
+    {
+      type: "hill",
+      label: "Ainain (Archers' Hill)",
+      points: [
+        { x: 26, y: 50 },
+        { x: 33, y: 47 },
+        { x: 39, y: 52 },
+        { x: 35, y: 59 },
+        { x: 27, y: 57 },
+      ],
+    },
+    {
+      type: "plain",
+      label: "Uhud Engagement Plain",
+      points: [
+        { x: 12, y: 30 },
+        { x: 90, y: 30 },
+        { x: 90, y: 88 },
+        { x: 12, y: 88 },
+      ],
+    },
+    {
+      type: "marsh",
+      label: "Broken Wadi Ground",
+      points: [
+        { x: 58, y: 54 },
+        { x: 72, y: 52 },
+        { x: 78, y: 60 },
+        { x: 69, y: 68 },
+        { x: 56, y: 64 },
+      ],
+    },
+    {
+      type: "road",
+      label: "Medina-Uhud Approach",
+      points: [
+        { x: 49, y: 100 },
+        { x: 49, y: 84 },
+        { x: 49, y: 70 },
+        { x: 48, y: 56 },
+        { x: 47, y: 42 },
+      ],
+      width: 0.75,
+    },
+  ],
+
+  forces: [
+    {
+      id: "muslim-main-line",
+      name: "Muslim Main Infantry Line",
+      side: 0,
+      type: "infantry",
+      count: 520,
+      commander: "Prophet Muhammad",
+      startPosition: { x: 48, y: 63 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "muslim-left-wing",
+      name: "Muslim Left Wing",
+      side: 0,
+      type: "infantry",
+      count: 90,
+      commander: "Ali ibn Abi Talib",
+      startPosition: { x: 35, y: 62 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "muslim-right-wing",
+      name: "Muslim Right Wing",
+      side: 0,
+      type: "infantry",
+      count: 90,
+      commander: "al-Zubayr ibn al-Awwam",
+      startPosition: { x: 61, y: 62 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "muslim-archers-ainain",
+      name: "Ainain Archer Detachment",
+      side: 0,
+      type: "archers",
+      count: 50,
+      commander: "Abdullah ibn Jubayr",
+      startPosition: { x: 32, y: 53 },
+      color: "#8b3a3a",
+    },
+    {
+      id: "muslim-rear-guard",
+      name: "Uhud Rear Guard",
+      side: 0,
+      type: "infantry",
+      count: 120,
+      commander: "Talha ibn Ubayd Allah",
+      startPosition: { x: 48, y: 70 },
+      color: "#8b3a3a",
+    },
+
+    {
+      id: "quraysh-center",
+      name: "Quraysh Center",
+      side: 1,
+      type: "infantry",
+      count: 1800,
+      commander: "Abu Sufyan",
+      startPosition: { x: 50, y: 38 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "quraysh-left-cavalry",
+      name: "Quraysh Left Cavalry",
+      side: 1,
+      type: "cavalry",
+      count: 120,
+      commander: "Ikrimah ibn Abi Jahl",
+      startPosition: { x: 34, y: 36 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "quraysh-right-cavalry",
+      name: "Quraysh Right Cavalry",
+      side: 1,
+      type: "cavalry",
+      count: 180,
+      commander: "Khalid ibn al-Walid",
+      startPosition: { x: 68, y: 36 },
+      color: "#3a5a8b",
+    },
+    {
+      id: "quraysh-archers",
+      name: "Quraysh Archer Screen",
+      side: 1,
+      type: "archers",
+      count: 420,
+      commander: "Meccan officers",
+      startPosition: { x: 50, y: 44 },
+      color: "#3a5a8b",
+    },
+  ],
+
+  phases: [
+    {
+      title: "Deployment with Uhud at the Rear",
+      timestamp: "Early morning",
+      duration: "~40 minutes",
+      narration:
+        "The Muslim force deploys in front of Mount Uhud with the rear protected by rising ground. A detached archer unit occupies Ainain to deny cavalry access to the flank corridor. Quraysh deploy with a broader front and cavalry on both wings.",
+      movements: [
+        {
+          unitId: "muslim-archers-ainain",
+          from: { x: 32, y: 53 },
+          to: { x: 32, y: 52 },
+          action: "hold",
+          significant: true,
+          note: "Archers lock down flank pass near Ainain.",
+        },
+        {
+          unitId: "quraysh-center",
+          from: { x: 50, y: 38 },
+          to: { x: 50, y: 42 },
+          action: "advance",
+          note: "Quraysh center closes toward the Muslim line.",
+        },
+      ],
+      casualties: {
+        side0: 40,
+        side1: 70,
+        description: "Initial skirmishing casualties",
+      },
+      tacticalNote: "Terrain anchoring compensates for smaller numbers by reducing encirclement avenues.",
+    },
+    {
+      title: "Muslim Advance and Quraysh Front Disorder",
+      timestamp: "Morning",
+      duration: "~55 minutes",
+      narration:
+        "Close combat develops across the center and Muslim assaults gain momentum. Parts of the Quraysh front bend and begin to pull back. The Ainain detachment continues to cover the vulnerable approach during this phase.",
+      movements: [
+        {
+          unitId: "muslim-main-line",
+          from: { x: 48, y: 63 },
+          to: { x: 48, y: 56 },
+          action: "advance",
+          significant: true,
+          note: "Main line pushes Quraysh center backward.",
+        },
+        {
+          unitId: "muslim-left-wing",
+          from: { x: 35, y: 62 },
+          to: { x: 38, y: 55 },
+          action: "charge",
+          note: "Left wing pressure widens Quraysh disorder.",
+        },
+        {
+          unitId: "quraysh-center",
+          from: { x: 50, y: 42 },
+          to: { x: 50, y: 48 },
+          action: "retreat",
+          damage: "light",
+          significant: true,
+          note: "Quraysh center yields ground temporarily.",
+        },
+      ],
+      casualties: {
+        side0: 110,
+        side1: 280,
+        description: "Quraysh front takes heavier early losses",
+      },
+      tacticalNote: "Early success can create overextension risk if flank security discipline breaks.",
+    },
+    {
+      title: "Ainain Position Weakens",
+      timestamp: "Late morning",
+      duration: "~30 minutes",
+      narration:
+        "As fighting appears decided on parts of the field, many Ainain archers leave position despite orders to hold. Only a reduced guard remains on the hill. The flank corridor near broken ground becomes exposed.",
+      movements: [
+        {
+          unitId: "muslim-archers-ainain",
+          from: { x: 32, y: 52 },
+          to: { x: 38, y: 58 },
+          action: "retreat",
+          significant: true,
+          note: "Most archers move off Ainain toward the main field.",
+        },
+        {
+          unitId: "quraysh-right-cavalry",
+          from: { x: 68, y: 36 },
+          to: { x: 63, y: 45 },
+          curve: { control: { x: 66, y: 40 } },
+          action: "flank",
+          note: "Khalid begins probing movement toward the opening.",
+        },
+      ],
+      casualties: {
+        side0: 80,
+        side1: 70,
+        description: "Limited losses, major positional change",
+      },
+      tacticalNote: "Loss of a key terrain guard can outweigh local tactical success elsewhere.",
+    },
+    {
+      title: "Khalid's Cavalry Rear Attack",
+      timestamp: "Near noon",
+      duration: "~45 minutes",
+      narration:
+        "Seeing the pass uncovered, Quraysh right cavalry swings through and strikes the Muslim rear and flank. Simultaneously, Quraysh center units rally and press forward again. The battlefield flips from pursuit to encirclement danger.",
+      movements: [
+        {
+          unitId: "quraysh-right-cavalry",
+          from: { x: 63, y: 45 },
+          to: { x: 50, y: 62 },
+          curve: { control: { x: 56, y: 55 } },
+          action: "encircle",
+          significant: true,
+          note: "Cavalry exploits Ainain gap and hits rear sectors.",
+        },
+        {
+          unitId: "quraysh-center",
+          from: { x: 50, y: 48 },
+          to: { x: 50, y: 55 },
+          action: "advance",
+          significant: true,
+          note: "Quraysh center renews pressure in coordination.",
+        },
+        {
+          unitId: "muslim-main-line",
+          from: { x: 48, y: 56 },
+          to: { x: 48, y: 61 },
+          action: "retreat",
+          damage: "heavy",
+          significant: true,
+          note: "Muslim center forced to reorient under rear assault.",
+        },
+      ],
+      casualties: {
+        side0: 320,
+        side1: 180,
+        description: "Severe Muslim losses during sudden reversal",
+      },
+      tacticalNote: "Mounted exploitation of a terrain gap converts tactical initiative in minutes.",
+    },
+    {
+      title: "Close-Quarter Crisis Around the Command Group",
+      timestamp: "Midday",
+      duration: "~35 minutes",
+      narration:
+        "Confused fighting concentrates around the Muslim command position with heavy casualties among senior fighters. Defensive knots form to prevent total collapse while pressure continues from multiple directions.",
+      movements: [
+        {
+          unitId: "muslim-rear-guard",
+          from: { x: 48, y: 70 },
+          to: { x: 47, y: 65 },
+          action: "hold",
+          significant: true,
+          note: "Rear guard forms a protective perimeter.",
+        },
+        {
+          unitId: "quraysh-left-cavalry",
+          from: { x: 34, y: 36 },
+          to: { x: 41, y: 55 },
+          curve: { control: { x: 36, y: 47 } },
+          action: "flank",
+          note: "Second cavalry wing pressures fragmented sectors.",
+        },
+      ],
+      casualties: {
+        side0: 210,
+        side1: 130,
+        description: "Heavy close combat in a compressed area",
+      },
+      tacticalNote: "Cohesion around command elements prevents rout during shock reversal.",
+    },
+    {
+      title: "Withdrawal to Uhud Slopes",
+      timestamp: "Afternoon",
+      duration: "~50 minutes",
+      narration:
+        "Muslim survivors disengage in groups toward the lower slopes of Uhud and deny further decisive penetration. Quraysh hold the field but do not force complete annihilation. The engagement ends with a contested tactical outcome but strategic lessons on discipline and terrain control.",
+      movements: [
+        {
+          unitId: "muslim-main-line",
+          from: { x: 48, y: 61 },
+          to: { x: 46, y: 48 },
+          action: "retreat",
+          significant: true,
+          note: "Main survivors fall back to protected slope positions.",
+        },
+        {
+          unitId: "muslim-right-wing",
+          from: { x: 61, y: 62 },
+          to: { x: 56, y: 50 },
+          action: "retreat",
+          note: "Right wing disengages toward Uhud.",
+        },
+        {
+          unitId: "quraysh-right-cavalry",
+          from: { x: 50, y: 62 },
+          to: { x: 53, y: 58 },
+          action: "hold",
+          note: "Quraysh cavalry consolidates rather than overcommits uphill.",
+        },
+      ],
+      casualties: {
+        side0: 140,
+        side1: 90,
+        description: "Final skirmishing losses during disengagement",
+      },
+      tacticalNote: "Retreat onto defensible elevation trades ground for survivability and restores partial control.",
+    },
+  ],
+
+  aftermath: {
+    outcome:
+      "Quraysh gained a battlefield advantage at Uhud after exploiting the exposed Ainain pass, while the Muslim force preserved a core by withdrawing to the mountain slopes.",
+    casualties: {
+      side0: {
+        dead: 70,
+        wounded: 160,
+        captured: 0,
+      },
+      side1: {
+        dead: 22,
+        wounded: 95,
+        captured: 0,
+      },
+    },
+    significance:
+      "Uhud became a foundational case study in discipline, terrain security, and command resilience under reversal. The battle showed how a locally superior position can be overturned when a key flank guard is abandoned, and how rapid cavalry exploitation can reshape combat geometry. In Islamic historical memory, Uhud's lessons on obedience, cohesion, and recovery under stress became as important as the tactical result itself.",
+  },
+};

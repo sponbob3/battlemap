@@ -71,6 +71,38 @@ interface AttackLaserEvent {
 
 const ATTACK_ACTIONS = new Set(["charge", "flank", "encircle", "bombard"]);
 const DIRECT_LASER_ACTIONS = new Set(["charge", "flank", "encircle"]);
+/** Slower than real time so charge/flank laser strokes read clearly on the map. */
+const ATTACK_LASER_DURATION_MS = 980;
+const ATTACK_LASER_TARGET_STAGGER_MS = 62;
+
+/** Max zoom-in keeps clusters readable without excessive magnification. Min is the default full-map view. */
+const MAP_ZOOM_MIN = 1;
+const MAP_ZOOM_MAX = 2.35;
+const MAP_RESET_DURATION_MS = 520;
+const MODERN_ERA_START_YEAR = 1700;
+
+function stopMapAnimation(rafRef: React.MutableRefObject<number | null>) {
+  if (rafRef.current != null) {
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+  }
+}
+
+function clampMapCenter(cx: number, cy: number, zoom: number, viewW: number, viewH: number) {
+  const halfW = viewW / (2 * zoom);
+  const halfH = viewH / (2 * zoom);
+  return {
+    x: Math.min(viewW - halfW, Math.max(halfW, cx)),
+    y: Math.min(viewH - halfH, Math.max(halfH, cy)),
+  };
+}
+
+function inferBattleYear(dateText: string): number | null {
+  const match = dateText.match(/(\d{3,4})/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  return Number.isFinite(year) ? year : null;
+}
 
 function getImpactDelayMs(movement: Movement, movementIndex: number, animationDuration: number): number {
   const distance = Math.sqrt((movement.to.x - movement.from.x) ** 2 + (movement.to.y - movement.from.y) ** 2);
@@ -211,8 +243,8 @@ function findAttackLaserEvents(
         from: attackerPos,
         to: target.pos,
         color: laserColor,
-        delayMs: impactDelayMs + 35 + targetIdx * 24,
-        durationMs: 230,
+        delayMs: impactDelayMs + 55 + targetIdx * ATTACK_LASER_TARGET_STAGGER_MS,
+        durationMs: ATTACK_LASER_DURATION_MS,
       });
     });
   }
@@ -434,18 +466,37 @@ function projectTerrain(features: TerrainFeature[], xScale: number): TerrainFeat
   }));
 }
 
-function UnitTooltip({ unit, position }: { unit: UnitGroup; position: Position }) {
+function truncateText(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, Math.max(0, maxChars - 1)).trimEnd()}...`;
+}
+
+function UnitTooltip({
+  unit,
+  position,
+  labelScale = 1,
+}: {
+  unit: UnitGroup;
+  position: Position;
+  labelScale?: number;
+}) {
   const unitScale = getUnitScale(unit.count);
   const halfH = unitScale * 0.6;
   const tooltipY = position.y - halfH - 10;
   const clampedY = Math.max(2, tooltipY);
+  const s = labelScale;
+  const unitName = truncateText(unit.name, 34);
+  const commander = truncateText(unit.commander, 26);
+  const detailLine = `${commander} — ${unit.count.toLocaleString()} troops`;
 
   return (
-    <g transform={`translate(${position.x}, ${clampedY})`} pointerEvents="none">
+    <g transform={`translate(${position.x}, ${clampedY}) scale(${s})`} pointerEvents="none">
       <rect x={-15} y={0} width={30} height={8} rx={1} fill="#0d1117" stroke="#2a3040" strokeWidth={0.3} opacity={0.95} />
-      <text x={0} y={3.5} fontSize="1.8" fill="#e0d8c8" textAnchor="middle" fontWeight="bold">{unit.name}</text>
+      <text x={0} y={3.5} fontSize="1.8" fill="#e0d8c8" textAnchor="middle" fontWeight="bold">
+        {unitName}
+      </text>
       <text x={0} y={6} fontSize="1.4" fill="#a0a0a0" textAnchor="middle">
-        {unit.commander} — {unit.count.toLocaleString()} troops
+        {detailLine}
       </text>
     </g>
   );
@@ -648,12 +699,26 @@ function PhaseSnapshotMiniPanel({ data, phaseIndex }: { data: BattleData; phaseI
 
 export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleMapProps) {
   const animDuration = getPhaseAnimationDuration(playbackSpeed);
+  const modernEra = useMemo(() => {
+    const year = inferBattleYear(data.battleMetadata.date);
+    return year != null && year >= MODERN_ERA_START_YEAR;
+  }, [data.battleMetadata.date]);
   const [hoveredUnitId, setHoveredUnitId] = useState<string | null>(null);
   const [focusedUnitId, setFocusedUnitId] = useState<string | null>(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
   const [hoveredTerrainLabel, setHoveredTerrainLabel] = useState<HoveredTerrainLabel | null>(null);
   const [viewportAspect, setViewportAspect] = useState(16 / 9);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [mapCenter, setMapCenter] = useState({ x: 100, y: 50 });
+  const [isPanning, setIsPanning] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const viewBoxWidthRef = useRef(100);
+  const mapZoomRef = useRef(1);
+  const mapCenterRef = useRef({ x: 100, y: 50 });
+  const panPointerRef = useRef<{ pointerId: number; lastX: number; lastY: number } | null>(null);
+  const mapAnimRafRef = useRef<number | null>(null);
+  const mapAnimatingRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -672,6 +737,150 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
 
   const xScale = Math.max(1, viewportAspect);
   const viewBoxWidth = 100 * xScale;
+  viewBoxWidthRef.current = viewBoxWidth;
+  mapZoomRef.current = mapZoom;
+  mapCenterRef.current = mapCenter;
+
+  useEffect(() => {
+    stopMapAnimation(mapAnimRafRef);
+    mapAnimatingRef.current = false;
+    setMapZoom(1);
+    setMapCenter({ x: viewBoxWidthRef.current / 2, y: 50 });
+  }, [data.battleMetadata.name]);
+
+  useEffect(() => {
+    if (mapAnimatingRef.current) return;
+    if (mapZoom <= MAP_ZOOM_MIN) return;
+    setMapCenter((prev) => clampMapCenter(prev.x, prev.y, mapZoom, viewBoxWidth, 100));
+  }, [viewBoxWidth, mapZoom]);
+
+  const centerForTransform = useMemo(() => {
+    if (mapZoom <= MAP_ZOOM_MIN) return { x: viewBoxWidth / 2, y: 50 };
+    return clampMapCenter(mapCenter.x, mapCenter.y, mapZoom, viewBoxWidth, 100);
+  }, [mapZoom, mapCenter.x, mapCenter.y, viewBoxWidth]);
+
+  const mapInv = 1 / Math.max(mapZoom, MAP_ZOOM_MIN);
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      stopMapAnimation(mapAnimRafRef);
+      mapAnimatingRef.current = false;
+      const rect = el.getBoundingClientRect();
+      const vb = el.viewBox.baseVal;
+      const vx = ((e.clientX - rect.left) / rect.width) * vb.width;
+      const vy = ((e.clientY - rect.top) / rect.height) * vb.height;
+      const vw = viewBoxWidthRef.current;
+      const delta = -e.deltaY * 0.0011;
+      setMapZoom((z) => {
+        const nextZ = Math.min(MAP_ZOOM_MAX, Math.max(MAP_ZOOM_MIN, z * Math.exp(delta)));
+        const c = mapCenterRef.current;
+        let nextCenter: { x: number; y: number };
+        if (nextZ <= MAP_ZOOM_MIN) {
+          nextCenter = { x: vw / 2, y: 50 };
+        } else {
+          const worldX = c.x + (vx - vw / 2) / z;
+          const worldY = c.y + (vy - 50) / z;
+          const newCx = worldX - (vx - vw / 2) / nextZ;
+          const newCy = worldY - (vy - 50) / nextZ;
+          nextCenter = clampMapCenter(newCx, newCy, nextZ, vw, 100);
+        }
+        setMapCenter(nextCenter);
+        return nextZ;
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const handleSvgPointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.button !== 0) return;
+    const target = e.target as Element;
+    if (target.closest("[data-no-pan]")) return;
+    stopMapAnimation(mapAnimRafRef);
+    mapAnimatingRef.current = false;
+    panPointerRef.current = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
+    setIsPanning(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }, []);
+
+  const handleSvgPointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    const drag = panPointerRef.current;
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    if (mapZoomRef.current <= MAP_ZOOM_MIN) return;
+    const dx = e.clientX - drag.lastX;
+    const dy = e.clientY - drag.lastY;
+    drag.lastX = e.clientX;
+    drag.lastY = e.clientY;
+    const el = svgRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const vb = el.viewBox.baseVal;
+    const dvx = (dx / rect.width) * vb.width;
+    const dvy = (dy / rect.height) * vb.height;
+    const z = mapZoomRef.current;
+    const vw = viewBoxWidthRef.current;
+    setMapCenter((c) => clampMapCenter(c.x - dvx / z, c.y - dvy / z, z, vw, 100));
+  }, []);
+
+  const endPan = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    const drag = panPointerRef.current;
+    if (drag && drag.pointerId === e.pointerId) {
+      panPointerRef.current = null;
+      setIsPanning(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const resetMapView = useCallback(() => {
+    stopMapAnimation(mapAnimRafRef);
+    const vw = viewBoxWidthRef.current;
+    const startZ = mapZoomRef.current;
+    const startC = { ...mapCenterRef.current };
+    const endZ = MAP_ZOOM_MIN;
+    const endC = { x: vw / 2, y: 50 };
+    if (startZ <= MAP_ZOOM_MIN + 0.004 && Math.hypot(startC.x - endC.x, startC.y - endC.y) < 0.02) {
+      setMapZoom(MAP_ZOOM_MIN);
+      setMapCenter(endC);
+      return;
+    }
+    mapAnimatingRef.current = true;
+    const t0 = performance.now();
+    const easeOutCubic = (u: number) => 1 - (1 - u) ** 3;
+    const tick = (now: number) => {
+      const rawT = Math.min(1, (now - t0) / MAP_RESET_DURATION_MS);
+      const e = easeOutCubic(rawT);
+      const z = startZ + (endZ - startZ) * e;
+      const cx = startC.x + (endC.x - startC.x) * e;
+      const cy = startC.y + (endC.y - startC.y) * e;
+      const curZ = rawT >= 1 ? endZ : z;
+      const curC = curZ <= MAP_ZOOM_MIN ? endC : clampMapCenter(cx, cy, curZ, viewBoxWidthRef.current, 100);
+      setMapZoom(curZ);
+      setMapCenter(curC);
+      if (rawT < 1) {
+        mapAnimRafRef.current = requestAnimationFrame(tick);
+      } else {
+        mapAnimRafRef.current = null;
+        mapAnimatingRef.current = false;
+        setMapZoom(MAP_ZOOM_MIN);
+        setMapCenter(endC);
+      }
+    };
+    mapAnimRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(
+    () => () => {
+      stopMapAnimation(mapAnimRafRef);
+    },
+    []
+  );
 
   const currentPositions = useMemo(
     () => computePositions(data.forces, data.phases, currentPhase),
@@ -762,12 +971,36 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
 
   const hoveredPosition = hoveredUnit ? currentPositions.get(hoveredUnit.id) || hoveredUnit.startPosition : null;
 
+  const zoomBarFillPct = Math.min(
+    100,
+    Math.max(6, ((mapZoom - MAP_ZOOM_MIN) / (MAP_ZOOM_MAX - MAP_ZOOM_MIN)) * 100)
+  );
+
   return (
     <div ref={containerRef} className="relative w-full h-full bg-[#0d1117] overflow-hidden">
-      <svg viewBox={`0 0 ${viewBoxWidth} 100`} className="w-full h-full" preserveAspectRatio="none">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${viewBoxWidth} 100`}
+        className={`w-full h-full select-none touch-none ${
+          mapZoom > MAP_ZOOM_MIN ? (isPanning ? "cursor-grabbing" : "cursor-grab") : ""
+        }`}
+        preserveAspectRatio="none"
+        onPointerDown={handleSvgPointerDown}
+        onPointerMove={handleSvgPointerMove}
+        onPointerUp={endPan}
+        onPointerCancel={endPan}
+      >
         <BurstGradientDef />
 
-        <Terrain features={projectedTerrain} onLabelHover={setHoveredTerrainLabel} />
+        <g
+          transform={`translate(${viewBoxWidth / 2} 50) scale(${mapZoom}) translate(${-centerForTransform.x} ${-centerForTransform.y})`}
+        >
+        <Terrain
+          features={projectedTerrain}
+          onLabelHover={setHoveredTerrainLabel}
+          mapZoom={mapZoom}
+          environment={data.battleMetadata.environment ?? "temperate"}
+        />
 
         {projectedPhaseMovements.map((movement, i) => (
             <MovementArrow
@@ -807,6 +1040,8 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
               hitSeverity={hitEffectsByUnit.get(unit.id)?.severity ?? 0}
               hitDelayMs={hitEffectsByUnit.get(unit.id)?.delayMs ?? 0}
               hitToken={currentPhase}
+              mapScaleCompensation={mapInv}
+              modernEra={modernEra}
               onHoverStart={handleUnitHoverStart}
               onHoverEnd={handleUnitHoverEnd}
             />
@@ -882,7 +1117,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
                 duration: laser.durationMs / 1000,
                 delay: laser.delayMs / 1000,
                 ease: "easeOut",
-                times: [0, 0.45, 1],
+                times: [0, 0.58, 1],
               }}
             />
           </g>
@@ -893,10 +1128,10 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
             <motion.circle
               cx={annotation.x * xScale}
               cy={annotation.y}
-              r={0.52}
+              r={0.52 * mapInv}
               fill="#6a2328"
               stroke="#9c4c54"
-              strokeWidth={0.12}
+              strokeWidth={0.12 * mapInv}
               animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.22, 1] }}
               transition={{ duration: 1.15, repeat: Infinity, ease: "easeInOut" }}
               style={{ cursor: "pointer" }}
@@ -906,7 +1141,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
           </g>
         ))}
 
-        <text x={2 * xScale} y={97} fontSize="1.5" fill="#3a4a5a" opacity={0.4}>
+        <text x={2 * xScale} y={97} fontSize={1.5 * mapInv} fill="#3a4a5a" opacity={0.4}>
           {currentPhase < 0
             ? `${data.battleMetadata.name} — Deployment`
             : `${data.battleMetadata.name} — Phase ${currentPhase + 1}/${data.phases.length}`}
@@ -917,7 +1152,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
             <g
               transform={`translate(${projectPosition(hoveredPosition, xScale).x}, ${
                 Math.max(2, projectPosition(hoveredPosition, xScale).y - getUnitScale(hoveredUnit.count) * 0.6 - 10)
-              })`}
+              }) scale(${mapInv})`}
               pointerEvents="none"
             >
               <motion.g
@@ -941,13 +1176,17 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
               y={hoveredTerrainLabel.y}
               textAnchor="middle"
               fill={hoveredTerrainLabel.fill}
-              letterSpacing={hoveredTerrainLabel.letterSpacing}
-              initial={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize }}
+              letterSpacing={
+                hoveredTerrainLabel.letterSpacing != null
+                  ? hoveredTerrainLabel.letterSpacing / mapZoom
+                  : undefined
+              }
+              initial={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize / mapZoom }}
               animate={{
                 opacity: Math.min(1, hoveredTerrainLabel.opacity + 0.25),
-                fontSize: hoveredTerrainLabel.fontSize * 1.2,
+                fontSize: (hoveredTerrainLabel.fontSize / mapZoom) * 1.2,
               }}
-              exit={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize }}
+              exit={{ opacity: 0, fontSize: hoveredTerrainLabel.fontSize / mapZoom }}
               transition={{ duration: 0.14, ease: "easeOut" }}
               style={{ pointerEvents: "none" }}
             >
@@ -959,7 +1198,7 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
         <AnimatePresence>
           {hoveredAction && hoveredActionLayout && (
             <g
-              transform={`translate(${hoveredAction.x * xScale + 1.4}, ${Math.max(2, hoveredAction.y - 1.2)})`}
+              transform={`translate(${hoveredAction.x * xScale + 1.4}, ${Math.max(2, hoveredAction.y - 1.2)}) scale(${mapInv})`}
               pointerEvents="none"
             >
               <motion.g
@@ -998,7 +1237,47 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
             </g>
           )}
         </AnimatePresence>
+        </g>
       </svg>
+
+      <div
+        className="group pointer-events-none absolute left-2 top-1/2 z-40 flex -translate-y-1/2 flex-col items-center"
+        title="Scroll on the map to zoom in or out. Drag to pan when zoomed in."
+      >
+        <div className="pointer-events-auto rounded-2xl border border-[#3d4d5c]/20 bg-[#0a1018]/35 px-1.5 py-2.5 opacity-[0.28] shadow-sm backdrop-blur-[1px] transition-[opacity,background-color,border-color,box-shadow] duration-300 ease-out group-hover:opacity-100 group-hover:border-[#5c6d80]/55 group-hover:bg-[#0f1823]/88 group-hover:shadow-md group-hover:backdrop-blur-sm">
+          <div className="mb-1 font-mono text-[7px] uppercase tracking-[0.2em] text-[#9aaaba] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            Zoom
+          </div>
+          <div
+            className="relative h-36 w-2 overflow-hidden rounded-full bg-[#1e2a35]/95 ring-1 ring-inset ring-white/[0.04]"
+            aria-hidden
+          >
+            <div
+              className="absolute bottom-0 left-0 right-0 rounded-b-full bg-gradient-to-t from-[#7a6a4a]/45 to-[#c4a86b]/85"
+              style={{ height: `${zoomBarFillPct}%` }}
+            />
+          </div>
+          <div className="mt-1.5 max-w-[4.5rem] text-center text-[8px] leading-tight text-[#6a7a8c] opacity-0 transition-opacity duration-300 group-hover:text-[#9aaaba] group-hover:opacity-100">
+            Scroll map to zoom
+          </div>
+        </div>
+      </div>
+
+      {mapZoom > MAP_ZOOM_MIN + 0.02 && (
+        <button
+          type="button"
+          onClick={resetMapView}
+          className="absolute bottom-20 left-4 z-40 flex h-10 w-10 items-center justify-center rounded-lg border border-[#3a4f62] bg-[#0f1823]/90 text-[#c4a86b] shadow-md backdrop-blur-sm transition hover:border-[#c4a86b]/50 hover:bg-[#152030]/95"
+          title="Center map"
+          aria-label="Center map and reset zoom"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5v2M12 17v2M5 12h2M17 12h2" strokeLinecap="round" />
+            <path d="M7 7l1.5 1.5M15.5 15.5L17 17M7 17l1.5-1.5M15.5 8.5L17 7" strokeLinecap="round" opacity={0.55} />
+          </svg>
+        </button>
+      )}
       {currentPhase < 0 && <StartMiniPanel data={data} />}
       {currentPhase >= 0 && currentPhase < data.phases.length && (
         <PhaseSnapshotMiniPanel data={data} phaseIndex={currentPhase} />

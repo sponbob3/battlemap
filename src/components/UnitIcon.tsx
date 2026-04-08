@@ -21,6 +21,9 @@ interface UnitIconProps {
   hitSeverity?: number;
   hitToken?: number;
   hitDelayMs?: number;
+  /** Counter-scale when the map is zoomed so the icon stays the same on-screen size (typically 1 / mapZoom). */
+  mapScaleCompensation?: number;
+  modernEra?: boolean;
   onHoverStart?: (unit: UnitGroup) => void;
   onHoverEnd?: () => void;
 }
@@ -40,6 +43,8 @@ export default function UnitIcon({
   hitSeverity = 0,
   hitToken,
   hitDelayMs = 0,
+  mapScaleCompensation = 1,
+  modernEra = false,
   onHoverStart,
   onHoverEnd,
 }: UnitIconProps) {
@@ -60,9 +65,12 @@ export default function UnitIcon({
   const shakeAmp = 0.12 + shakeStrength * 0.72;
   const shakeDuration = 0.22 + shakeStrength * 0.34;
   const flareDuration = 0.32 + shakeStrength * 0.65;
+  // Keep all icons fully inside the unit box so they remain centered and don't appear offset by clipping.
+  const iconSize = Math.max(6, scale - 0.6);
 
   return (
     <motion.g
+      data-no-pan
       initial={{ x: fromPos.x, y: fromPos.y, opacity: isDestroyed ? 0.2 : 1 }}
       animate={{
         x: followsCurvedPath ? [fromPos.x, curveControl!.x, position.x] : position.x,
@@ -85,6 +93,7 @@ export default function UnitIcon({
       onMouseLeave={() => onHoverEnd?.()}
       style={{ cursor: "pointer" }}
     >
+      <g transform={`scale(${mapScaleCompensation})`}>
       <motion.g
         key={`impact-${hitToken ?? "none"}-${unit.id}`}
         initial={{ x: 0, y: 0 }}
@@ -159,8 +168,9 @@ export default function UnitIcon({
           >
             <UnitIconSVG
               type={unit.type}
-              size={Math.max(8, scale * 1.8)}
+              size={iconSize}
               color={isEliminated ? "#7a7a7a" : strokeColor}
+              modernEra={modernEra}
             />
           </div>
         </foreignObject>
@@ -197,6 +207,7 @@ export default function UnitIcon({
           </g>
         )}
       </motion.g>
+      </g>
     </motion.g>
   );
 }

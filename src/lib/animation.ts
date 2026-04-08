@@ -50,11 +50,13 @@ export function getNarrationPauseDuration(speed: number): number {
 }
 
 export function getUnitScale(count: number): number {
-  const minSize = 3;
-  const maxSize = 8;
-  const logMin = Math.log(1000);
+  // Support both pre-modern battles (tens/hundreds) and modern formations (thousands+)
+  // without collapsing early-era units to the same tiny minimum marker size.
+  const minSize = 3.6;
+  const maxSize = 7.1;
+  const logMin = Math.log(50);
   const logMax = Math.log(100000);
-  const logCount = Math.log(Math.max(count, 1000));
+  const logCount = Math.log(Math.max(count, 50));
   const t = Math.min(1, Math.max(0, (logCount - logMin) / (logMax - logMin)));
   return minSize + t * (maxSize - minSize);
 }

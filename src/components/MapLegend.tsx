@@ -44,6 +44,12 @@ const TERRAIN_LABELS: Record<TerrainFeature["type"], string> = {
   plain: "Open plain",
   marsh: "Wet ground / obstruction",
   road: "Road / movement corridor",
+  grassland: "Grassland / meadow",
+  woodland: "Dense woodland",
+  snow: "Snow / ice field",
+  desert: "Desert / arid ground",
+  ocean: "Open water / sea",
+  ridge: "Major ridge / mountain flank (large relief)",
 };
 
 export default function MapLegend({ data }: MapLegendProps) {
@@ -76,10 +82,10 @@ export default function MapLegend({ data }: MapLegendProps) {
   }, [data.phases, data.forces]);
 
   return (
-    <div className="absolute bottom-3 right-3 z-20">
+    <div className="absolute bottom-3 left-3 z-20">
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="w-64 rounded-lg border border-[#1b2638] bg-[#0b111a]/95 backdrop-blur-sm px-3 py-2 shadow-lg flex items-center justify-between text-left"
+        className="w-72 rounded-lg border border-[#1b2638] bg-[#0b111a]/95 backdrop-blur-sm px-3 py-2 shadow-lg flex items-center justify-between text-left"
       >
         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7a8798]">
           Legend ({data.battleMetadata.name})
@@ -94,7 +100,7 @@ export default function MapLegend({ data }: MapLegendProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-lg border border-[#1b2638] bg-[#0b111a]/95 backdrop-blur-sm p-3 shadow-lg"
+            className="mt-2 w-72 h-80 overflow-y-auto rounded-lg border border-[#1b2638] bg-[#0b111a]/95 backdrop-blur-sm p-3 shadow-lg"
           >
             <div className="mb-3">
               <div className="text-[10px] text-[#9ba8b9] mb-1.5 uppercase tracking-widest">Units In This Battle</div>

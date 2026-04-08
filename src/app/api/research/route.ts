@@ -16,12 +16,13 @@ Return ONLY valid JSON matching this exact schema (no markdown, no code fences, 
     "belligerents": ["side A name", "side B name"],
     "commanders": [["side A commanders..."], ["side B commanders..."]],
     "outcome": "string",
-    "scale": "string describing scale"
+    "scale": "string describing scale",
+    "environment": "optional: temperate | snow | desert | ocean — match climate/setting for map backdrop colors"
   },
   "context": "2-3 paragraphs of strategic/political context (use \\n\\n between paragraphs)",
   "terrain": [
     {
-      "type": "river|forest|hill|urban|fortification|plain|marsh|road",
+      "type": "river|forest|hill|ridge|urban|fortification|plain|marsh|road|grassland|woodland|snow|desert|ocean",
       "label": "optional name",
       "points": [{"x": 0-100, "y": 0-100}, ...],
       "width": "optional number for rivers/roads"
@@ -73,6 +74,12 @@ Return ONLY valid JSON matching this exact schema (no markdown, no code fences, 
 
 IMPORTANT RULES:
 - All coordinates use a normalized 0-100 grid (x: left to right, y: top to bottom)
+- plain and grassland: optional label placement only (points set label position); they do not render a filled region — open ground is always the map backdrop
+- Terrain selection order: first map decisive obstacles (rivers, marsh, coast, urban choke points, fortification lines, key roads), then add elevation features only if they materially shape maneuver
+- Use type "ridge" only when historically justified by significant large-scale relief (major mountain flank, long escarpment, dominant high ground) and place it where it actually exists on that battlefield; do not include ridge by default
+- Never add mirrored left/right border ridges unless the battlefield is specifically a valley or corridor bounded by high ground on both sides
+- Use "hill" for localized rises on the battlefield
+- Prefer one accurate major elevation feature over multiple speculative ones; if uncertain, use fewer and smaller elevation features
 - Place terrain features realistically relative to battlefield geography
 - Side 0 forces should generally start in the bottom half (y: 50-80), side 1 in the top half (y: 20-50)
 - Each phase's movements must reference valid unitIds from the forces array

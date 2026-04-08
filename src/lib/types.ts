@@ -3,6 +3,8 @@ export interface Position {
   y: number;
 }
 
+export type BattleEnvironment = "temperate" | "snow" | "desert" | "ocean";
+
 export interface BattleMetadata {
   name: string;
   date: string;
@@ -11,6 +13,8 @@ export interface BattleMetadata {
   commanders: [string[], string[]];
   outcome: string;
   scale: string;
+  /** Affects base map colors (grassland default, or snow / desert / ocean tones). */
+  environment?: BattleEnvironment;
 }
 
 export type UnitType =
@@ -48,7 +52,21 @@ export interface UnitGroup {
 }
 
 export interface TerrainFeature {
-  type: "river" | "forest" | "hill" | "urban" | "fortification" | "plain" | "marsh" | "road";
+  type:
+    | "river"
+    | "forest"
+    | "hill"
+    | "urban"
+    | "fortification"
+    | "plain"
+    | "marsh"
+    | "road"
+    | "grassland"
+    | "woodland"
+    | "snow"
+    | "desert"
+    | "ocean"
+    | "ridge";
   label?: string;
   points: Position[];
   width?: number;

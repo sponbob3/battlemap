@@ -12,12 +12,39 @@ export const daraData: BattleData = {
     ],
     outcome: "Decisive Byzantine defensive victory",
     scale: "Approx. 25,000 Byzantines vs 40,000-50,000 Sasanians",
+    environment: "desert",
   },
 
   context:
     "In the final years of Emperor Justin I and at the dawn of Justinian's reign, the Roman-Persian frontier erupted again in the Iberian War. The fortified city of Dara, built by the Romans close to the frontier, was both a military bastion and a political provocation to the Sasanians. Persia sought to reassert dominance in upper Mesopotamia and break Roman confidence before Justinian could consolidate power.\\n\\nBelisarius, still early in his career but already known for discipline and tactical creativity, faced a larger Sasanian field army under Perozes. Rather than meeting Persian cavalry in open maneuver, he prepared the ground around Dara with an engineered defense: long trenches with controlled gaps, shaping lanes for attacks and protecting vulnerable flanks. He also integrated diverse troops including Hun cavalry and heavily armed infantry, aiming to absorb shock then counterstrike at decisive points.\\n\\nThe battle became a textbook case of battlefield preparation defeating numerical superiority. Through terrain modification, disciplined reserves, and timed cavalry intervention, the Byzantine army broke repeated assaults, shattered the elite Persian Immortals wing attack, and transformed what should have been a Persian pressure victory into one of Belisarius's most admired early triumphs.",
 
   terrain: [
+    {
+      type: "ridge",
+      label: "Western Heights",
+      points: [
+        { x: 0, y: 0 },
+        { x: 26, y: 1.5 },
+        { x: 22, y: 24 },
+        { x: 19, y: 50 },
+        { x: 22, y: 76 },
+        { x: 26, y: 98.5 },
+        { x: 0, y: 100 },
+      ],
+    },
+    {
+      type: "ridge",
+      label: "Eastern Ridge",
+      points: [
+        { x: 100, y: 0 },
+        { x: 74, y: 1.5 },
+        { x: 78, y: 24 },
+        { x: 81, y: 50 },
+        { x: 78, y: 76 },
+        { x: 74, y: 98.5 },
+        { x: 100, y: 100 },
+      ],
+    },
     {
       type: "plain",
       label: "Open Battle Plain",
@@ -66,26 +93,6 @@ export const daraData: BattleData = {
         { x: 65, y: 86 },
         { x: 67, y: 96 },
         { x: 33, y: 96 },
-      ],
-    },
-    {
-      type: "hill",
-      label: "Low Ridges",
-      points: [
-        { x: 10, y: 34 },
-        { x: 20, y: 31 },
-        { x: 24, y: 37 },
-        { x: 14, y: 40 },
-      ],
-    },
-    {
-      type: "hill",
-      label: "Eastern Rise",
-      points: [
-        { x: 74, y: 34 },
-        { x: 84, y: 31 },
-        { x: 88, y: 37 },
-        { x: 78, y: 40 },
       ],
     },
     {
