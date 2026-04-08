@@ -302,6 +302,7 @@ function BattleViewerInner() {
         }
       : data.phases[currentPhase] || null;
   const inDeploymentView = currentPhase < 0;
+  const shouldHighlightNext = !isPlaying && currentPhase < data.phases.length;
 
   return (
     <div className="h-screen flex flex-col bg-[#0b1015] overflow-hidden relative">
@@ -359,7 +360,7 @@ function BattleViewerInner() {
           playbackSpeed={playbackSpeed}
           currentPhase={currentPhase}
           totalPhases={data.phases.length + 1}
-          highlightNext={inDeploymentView}
+          highlightNext={shouldHighlightNext}
           onPlayPause={handlePlayPause}
           onStepForward={handleStepForward}
           onStepBack={handleStepBack}

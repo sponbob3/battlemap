@@ -1128,12 +1128,21 @@ export default function BattleMap({ data, currentPhase, playbackSpeed }: BattleM
             <motion.circle
               cx={annotation.x * xScale}
               cy={annotation.y}
-              r={0.52 * mapInv}
-              fill="#6a2328"
-              stroke="#9c4c54"
-              strokeWidth={0.12 * mapInv}
-              animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.22, 1] }}
-              transition={{ duration: 1.15, repeat: Infinity, ease: "easeInOut" }}
+              r={0.56 * mapInv}
+              fill="#8a2f35"
+              stroke="#d06a73"
+              strokeWidth={0.14 * mapInv}
+              animate={{
+                opacity: [0.62, 1, 0.74, 0.95, 0.68],
+                scale: [1, 1.48, 1.12, 1.3, 1],
+              }}
+              transition={{
+                duration: 0.95,
+                repeat: Infinity,
+                repeatDelay: 0.35,
+                ease: "easeOut",
+                times: [0, 0.16, 0.3, 0.55, 1],
+              }}
               style={{ cursor: "pointer" }}
               onMouseEnter={() => setHoveredMarkerId(annotation.id)}
               onMouseLeave={() => setHoveredMarkerId((prev) => (prev === annotation.id ? null : prev))}
